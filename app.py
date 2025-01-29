@@ -75,7 +75,7 @@ if not filtered_df.empty:
         st.markdown("---")
 else:
     st.warning("No matching results found for the selected news article.")
-
+# Analysis at the bottom
 # Footer analysis
 st.sidebar.header("Analysis")
 if view_option == "Fuzzy Matching":
