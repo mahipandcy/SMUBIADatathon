@@ -3,55 +3,6 @@ import pandas as pd
 import requests
 from urllib.parse import urlparse
 
-# Function to check the reliability of a news source
-def check_reliability(news_link):
-    # Here, we can use a simple API like Media Bias/Fact Check (MBFC) or other news rating APIs.
-    # For this example, we'll check if the domain is known for reliability (this is a simplified method).
-    
-    trusted_sources = [
-    "cnn.com","channelnewsasia.com", "bbc.com", "nytimes.com", "theguardian.com", "reuters.com",
-    "aljazeera.com", "wsj.com", "forbes.com", "bbc.co.uk", "ft.com",
-    "cnbc.com", "abcnews.go.com", "npr.org", "usatoday.com", "washingtonpost.com",
-    "businessinsider.com", "time.com", "huffpost.com", "vox.com", "newsweek.com",
-    "independent.co.uk", "theverge.com", "bloomberg.com", "politico.com", "thehill.com",
-    "nationalgeographic.com", "economist.com", "apnews.com", "latimes.com", "cbsnews.com",
-    "nbcnews.com", "ft.com", "thelocal.se", "elpais.com", "lemonde.fr", "derstandard.at",
-    "spiegel.de", "scmp.com", "thetimes.co.uk", "newyorker.com", "thedailybeast.com",
-    "guardian.co.uk", "dw.com", "theconversation.com", "axios.com", "republicworld.com",
-    "thecut.com", "buzzfeednews.com", "theblaze.com", "thedailycaller.com", "thedailybeast.com",
-    "motherjones.com", "infowars.com", "salon.com", "slate.com", "theintercept.com",
-    "axios.com", "ctvnews.ca", "news.com.au", "bbc.com", "foxnews.com",
-    "thechronicle.com", "theindependent.com", "theeconomist.com", "hbr.org", "theatlantic.com",
-    "usatoday.com", "thehill.com", "latimes.com", "newyorkpost.com", "newsday.com",
-    "foxnews.com", "theguardian.com", "newsweek.com", "worldnewsdailyreport.com", "china.org.cn",
-    "theweek.com", "inc.com", "sciencealert.com", "fortune.com", "breakingnews.com",
-    "cnn.co.uk", "gizmodo.com", "businessweek.com", "mit.edu", "space.com", "scientificamerican.com",
-    "newscientist.com", "mashable.com", "techcrunch.com", "wired.com", "engadget.com",
-    "digitaltrends.com", "techradar.com", "arstechnica.com", "ziffdavis.com", "euobserver.com",
-    "theconversation.com", "un.org", "reuters.com", "bbc.com", "foxnews.com", "bloomberg.com",
-    "financialtimes.com", "thetimes.co.uk", "dailycaller.com", "techradar.com", "sfgate.com",
-    "thefinancialexpress.com", "dw.com", "independent.co.uk", "thetimestv.com", "politico.eu",
-    "thediplomat.com", "theguardian.co.uk", "thegurdian.com", "theblaze.com", "gulfnews.com",
-    "themarysue.com", "thedailyrecord.co.uk", "thehill.com", "thesun.co.uk", "summitdaily.com",
-    "sfgate.com", "expatica.com", "royalcentral.co.uk", "foreignpolicy.com", "theplaidzebra.com",
-    "mic.com", "theconversation.com", "dev.to", "learn.microsoft.com", "uxdesign.cc", "greentechmedia.com",
-    "thedialogue.org", "theastronauts.com", "timesofindia.indiatimes.com", "mashable.com",
-    "geekwire.com", "wired.co.uk", "openai.com", "techxplore.com", "slashdot.org", "gadgets360.com",
-    "airtable.com", "wipo.int", "locusplatforms.com", "harvard.edu", "charteredaccountants.com",
-    "nasa.gov", "newyorker.com", "expatlife.co", "academic.oup.com", "bbcnews.com", "bbc.co.uk",
-    "theroot.com", "theverge.com", "techradar.com", "cnbc.com", "cbsnews.com", "thedailybeast.com",
-    "summitdaily.com", "geek.com", "singularityhub.com", "gizmodo.com", "cloud.google.com",
-    "etonline.com", "space.com", "livescience.com", "nationalgeographic.com", "phys.org", "mentalfloss.com",
-    "dailystar.co.uk", "examiner.com", "thedailybeast.com", "stjude.org", "ted.com", "events.kickstarter.com",
-    "weather.com", "openculture.com", "sciencedaily.com", "educationweek.org", "researchgate.net"
-]
-  # Add trusted sources as needed
-    domain = urlparse(news_link).netloc
-    
-    if any(trusted_source in domain for trusted_source in trusted_sources):
-        return "Reliable Source"
-    else:
-        return "Unverified Source"
 
 # Load the preprocessed data files
 fuzzy_file = "./data/cited_judgments_with_news_articles.xlsx"
