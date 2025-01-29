@@ -2,8 +2,8 @@ import streamlit as st
 import pandas as pd
 
 # Load the preprocessed data files
-fuzzy_file = "cited_judgments_with_news_articles.xlsx"
-bert_file = "sentencebert_results.xlsx"
+fuzzy_file = "./data/cited_judgments_with_news_articles.xlsx"
+bert_file = "./data/sentencebert_results.xlsx"
 
 fuzzy_df = pd.read_excel(fuzzy_file)
 bert_df = pd.read_excel(bert_file)
