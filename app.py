@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import requests
 from urllib.parse import urlparse
-
+import ast  # For converting string representations of lists to actual lists
 
 # Load the preprocessed data files
 fuzzy_file = "./data/cited_judgments_with_news_articles.xlsx"
@@ -85,9 +85,7 @@ if not filtered_df_sorted.empty:
     for _, row in filtered_df_sorted.iterrows():
         st.write(f"**Wikileaks Text:** {row['wikileaks_Text']}")
         st.write(f"**Similarity Score:** {row['content_similarity']:.2f}%")
-
         st.write(f"**Category Match:** {row['wikileaks_Category']}")
-
         st.markdown("---")
 else:
     st.warning("No matching results found for the selected news article.")
@@ -96,20 +94,22 @@ else:
 st.sidebar.header("Analysis")
 if view_option == "Fuzzy Matching":
     st.sidebar.subheader("Top 15 Most Common Entities")
-    # Filter out rows where common_entities is '[]'
-    filtered_fuzzy_df = fuzzy_df[fuzzy_df['common_entities'] != '[]']
+    
+    # Ensure the 'common_entities' column is correctly processed (converting string to list)
+    fuzzy_df['common_entities'] = fuzzy_df['common_entities'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
     
     # Explode the 'common_entities' column and count the occurrences
-    most_common_entities = filtered_fuzzy_df['common_entities'].explode().value_counts().head(15)
-    st.sidebar.write(most_common_entities)
+    filtered_fuzzy_df = fuzzy_df[fuzzy_df['common_entities'].notnull()]
+    entity_counts = filtered_fuzzy_df['common_entities'].explode().value_counts().head(15).reset_index()
+    entity_counts.columns = ["Entity", "Count"]
+    
+    # Display in table format
+    st.sidebar.table(entity_counts)
 else:
     st.sidebar.subheader("Top 15 Most Common Entities")
-    # Check if the entities are formatted correctly
-    exploded_entities = bert_df['news_entities'].explode()
     
-    # Debug: display the first few entities
-    st.write("First few exploded entities from Sentence-BERT:", exploded_entities.head(15))
+    # Exploding and counting for Sentence-BERT entities
+    exploded_entities = bert_df['news_entities'].dropna().explode().value_counts().head(15)
     
-    # Count the occurrences of each entity
-    most_common_entities = exploded_entities.value_counts().head(15)
-    st.sidebar.write(most_common_entities)
+    # Display the most common entities for Sentence-BERT
+    st.sidebar.write(exploded_entities)
