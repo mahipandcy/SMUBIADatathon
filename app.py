@@ -2,16 +2,32 @@ import streamlit as st
 import pandas as pd
 import ast  # For converting string representations of lists to actual lists
 
-# Load the preprocessed data files
-fuzzy_file = "./data/cited_judgments_with_news_articles.xlsx"
-bert_file = "./data/sentencebert_results.xlsx"
+# Cache data loading
+@st.cache_data
+def load_data():
+    fuzzy_df = pd.read_excel("./data/cited_judgments_with_news_articles.xlsx")
+    bert_df = pd.read_excel("./data/sentencebert_results.xlsx")
+    return fuzzy_df, bert_df
 
-fuzzy_df = pd.read_excel(fuzzy_file)
-bert_df = pd.read_excel(bert_file)
+fuzzy_df, bert_df = load_data()
 
-# Drop duplicate news excerpts
-fuzzy_df_unique = fuzzy_df.drop_duplicates(subset="news_Link")
-bert_df_unique = bert_df.drop_duplicates(subset="news_Link")
+# Cache unique links extraction
+@st.cache_data
+def get_unique_links(df):
+    return df.drop_duplicates(subset="news_Link")["news_Link"].unique()
+
+fuzzy_unique_links = get_unique_links(fuzzy_df)
+bert_unique_links = get_unique_links(bert_df)
+
+# Cache entity preprocessing
+@st.cache_data
+def preprocess_entities(df):
+    df = df.copy()
+    if "common_entities" in df.columns:
+        df["common_entities"] = df["common_entities"].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
+    return df
+
+fuzzy_df = preprocess_entities(fuzzy_df)
 
 # Streamlit app
 st.title("Wikileaks and News Excerpt Similarity Analysis")
@@ -24,55 +40,40 @@ view_option = st.sidebar.selectbox("Choose Similarity Method", ["Fuzzy Matching"
 selection_method = st.sidebar.radio("Select by", ["News Link", "News Excerpt Text"])
 
 # Display options based on the selection method
+if view_option == "Fuzzy Matching":
+    available_links = fuzzy_unique_links
+    filtered_df_unique = fuzzy_df
+else:
+    available_links = bert_unique_links
+    filtered_df_unique = bert_df
+
 if selection_method == "News Link":
     st.sidebar.subheader("Available News Links")
-    available_links = (
-        fuzzy_df_unique["news_Link"].unique()
-        if view_option == "Fuzzy Matching"
-        else bert_df_unique["news_Link"].unique()
-    )
     selected_news = st.sidebar.selectbox("Select a News Link", available_links)
-    filtered_df_unique = (
-        fuzzy_df_unique if view_option == "Fuzzy Matching" else bert_df_unique
-    )
     news_link = selected_news
 else:
     st.sidebar.subheader("Available News Excerpts")
-    available_texts = (
-        fuzzy_df_unique["news_Text"].unique()
-        if view_option == "Fuzzy Matching"
-        else bert_df_unique["news_Text"].unique()
-    )
+    available_texts = filtered_df_unique["news_Text"].dropna().unique()
     selected_text = st.sidebar.selectbox("Select a News Excerpt", available_texts)
-    filtered_df_unique = (
-        fuzzy_df_unique if view_option == "Fuzzy Matching" else bert_df_unique
-    )
     news_link = filtered_df_unique[filtered_df_unique["news_Text"] == selected_text].iloc[0]["news_Link"]
 
 # Sidebar for category selection
-# Handle missing categories by dropping NaN values and ensuring unique categories
-if view_option == "Fuzzy Matching":
-    categories = fuzzy_df_unique['wikileaks_Category'].dropna().unique()
-else:
-    categories = bert_df_unique['wikileaks_Category'].dropna().unique()
+@st.cache_data
+def get_categories(df):
+    return df['wikileaks_Category'].dropna().unique()
 
+categories = get_categories(fuzzy_df if view_option == "Fuzzy Matching" else bert_df)
 category_option = st.sidebar.selectbox("Select Category", ["All"] + list(categories))
 
-# Filter the appropriate dataframe
-if view_option == "Fuzzy Matching":
-    filtered_df = fuzzy_df[fuzzy_df["news_Link"] == news_link]
-else:
-    filtered_df = bert_df[bert_df["news_Link"] == news_link]
+# Cache filtering
+@st.cache_data
+def get_filtered_df(df, news_link, category_option):
+    filtered = df[df["news_Link"] == news_link].sort_values(by="content_similarity", ascending=False)
+    if category_option != "All":
+        filtered = filtered[filtered["wikileaks_Category"] == category_option]
+    return filtered.head(5)
 
-# Sort by similarity score in descending order and filter by category if selected
-filtered_df_sorted = filtered_df.sort_values(by='content_similarity', ascending=False)
-
-# If category is selected, filter by the chosen category
-if category_option != "All":
-    filtered_df_sorted = filtered_df_sorted[filtered_df_sorted['wikileaks_Category'] == category_option]
-
-# Get the top 5 most relevant Wikileaks documents
-filtered_df_sorted = filtered_df_sorted.head(5)
+filtered_df_sorted = get_filtered_df(fuzzy_df if view_option == "Fuzzy Matching" else bert_df, news_link, category_option)
 
 # Display results for the selected news article
 if not filtered_df_sorted.empty:
@@ -81,8 +82,6 @@ if not filtered_df_sorted.empty:
     st.write(f"**Entities:** {filtered_df_sorted.iloc[0]['news_entities']}")
     st.write(f"**Relationships:** {filtered_df_sorted.iloc[0]['news_relationships']}")
     st.write(f"**Categories:** {filtered_df_sorted.iloc[0]['news_Category_x']} / {filtered_df_sorted.iloc[0]['news_Category_y']}")
-
-    # Display News Link
     st.write(f"**Source:** {news_link}")
 
     st.subheader("Top 5 Most Similar Wikileaks Documents")
@@ -94,26 +93,19 @@ if not filtered_df_sorted.empty:
 else:
     st.warning("No matching results found for the selected news article.")
 
-# Footer analysis
+# Sidebar Analysis
 st.sidebar.header("Analysis")
+st.sidebar.subheader("Top 15 Most Common Entities")
+
+@st.cache_data
+def get_top_entities(df, column):
+    if column in df.columns:
+        return pd.Series([entity for sublist in df[column].dropna() for entity in sublist]).value_counts().head(15)
+
 if view_option == "Fuzzy Matching":
-    st.sidebar.subheader("Top 15 Most Common Entities")
-    
-    # Ensure the 'common_entities' column is correctly processed (converting string to list)
-    fuzzy_df['common_entities'] = fuzzy_df['common_entities'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
-    
-    # Explode the 'common_entities' column and count the occurrences
-    filtered_fuzzy_df = fuzzy_df[fuzzy_df['common_entities'].notnull()]
-    entity_counts = filtered_fuzzy_df['common_entities'].explode().value_counts().head(15).reset_index()
-    entity_counts.columns = ["Entity", "Count"]
-    
-    # Display in table format
-    st.sidebar.table(entity_counts)
+    top_entities = get_top_entities(fuzzy_df, "common_entities")
 else:
-    st.sidebar.subheader("Top 15 Most Common Entities")
-    
-    # Exploding and counting for Sentence-BERT entities
-    exploded_entities = bert_df['news_entities'].dropna().explode().value_counts().head(15)
-    
-    # Display the most common entities for Sentence-BERT
-    st.sidebar.write(exploded_entities)
+    top_entities = get_top_entities(bert_df, "news_entities")
+
+if top_entities is not None:
+    st.sidebar.write(top_entities)
