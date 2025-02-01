@@ -60,9 +60,12 @@ else:
 # Sidebar for category selection
 @st.cache_data
 def get_categories(df):
+    # Ensure no NaN values are included in the unique categories
     return df['wikileaks_Category'].dropna().unique()
 
 categories = get_categories(fuzzy_df if view_option == "Fuzzy Matching" else bert_df)
+
+# Add "All" category as the default option to select all categories
 category_option = st.sidebar.selectbox("Select Category", ["All"] + list(categories))
 
 # Cache filtering
