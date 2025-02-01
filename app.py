@@ -1,7 +1,5 @@
 import streamlit as st
 import pandas as pd
-import requests
-from urllib.parse import urlparse
 import ast  # For converting string representations of lists to actual lists
 
 # Load the preprocessed data files
@@ -52,7 +50,13 @@ else:
     news_link = filtered_df_unique[filtered_df_unique["news_Text"] == selected_text].iloc[0]["news_Link"]
 
 # Sidebar for category selection
-category_option = st.sidebar.selectbox("Select Category", ["All"] + list(filtered_df_unique['wikileaks_Category'].unique()))
+# Handle missing categories by dropping NaN values and ensuring unique categories
+if view_option == "Fuzzy Matching":
+    categories = fuzzy_df_unique['wikileaks_Category'].dropna().unique()
+else:
+    categories = bert_df_unique['wikileaks_Category'].dropna().unique()
+
+category_option = st.sidebar.selectbox("Select Category", ["All"] + list(categories))
 
 # Filter the appropriate dataframe
 if view_option == "Fuzzy Matching":
