@@ -25,6 +25,17 @@ def load_data():
 
 fuzzy_df, bert_df, parsed_news_df = load_data()
 
+# Load the Wikileaks mapping file.
+# This file contains the columns: PDF Path, Text, language, validated, entities, relationships, Category, key
+@st.cache_data
+def load_wikileaks_mapping():
+    return pd.read_excel("./data/processed_wikileaks_parsed_with_category.xlsx")
+
+wikileaks_mapping_df = load_wikileaks_mapping()
+
+# Build a mapping from key to the Wikileaks document text
+key_to_text = pd.Series(wikileaks_mapping_df["Text"].values, index=wikileaks_mapping_df["key"]).to_dict()
+
 @st.cache_data
 def get_unique_links(df):
     return df.drop_duplicates(subset="news_Link")["news_Link"].unique()
@@ -97,9 +108,9 @@ st.sidebar.subheader("Top 15 Most Common Entities")
 def get_top_entities(df, column, is_sentencebert=False):
     if column in df.columns:
         if is_sentencebert:
-            #handling the Sentence-BERT 'news_entities' column
+            # Handling the Sentence-BERT 'news_entities' column
             entities = df[column].dropna().explode().unique()  
-            entity_series = pd.Series(entities).value_counts().head(15)  #getting the top 15 
+            entity_series = pd.Series(entities).value_counts().head(15)  # Getting the top 15 
             return pd.DataFrame({
                 "Entity": entity_series.index
             })
@@ -189,7 +200,13 @@ if not filtered_df_sorted.empty:
             # Similarity score shown at the top
             st.markdown(f"### Similarity Score: {filtered_df_sorted.iloc[i]['content_similarity']:.2f}%")
             st.markdown("### Wikileaks Document")
-            st.write(filtered_df_sorted.iloc[i]['wikileaks_Text'])
+            # For Sentence-BERT, the wikileaks_Text column is a key.
+            if view_option == "Sentence-BERT":
+                doc_key = filtered_df_sorted.iloc[i]['wikileaks_Text']
+                doc_text = key_to_text.get(doc_key, f"Document not found for key: {doc_key}")
+                st.write(doc_text)
+            else:
+                st.write(filtered_df_sorted.iloc[i]['wikileaks_Text'])
             st.markdown(f"**Category Match:** {filtered_df_sorted.iloc[i]['wikileaks_Category']}")
 else:
     st.info("No similar Wikileaks documents to display.")
