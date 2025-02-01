@@ -1,0 +1,10 @@
+streamlit
+pandas
+altair
+matplotlib
+wordcloud
+seaborn
+networkx
+pyvis
+plotly
+openpyxl
