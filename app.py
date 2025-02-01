@@ -94,17 +94,39 @@ st.sidebar.header("Additional Analysis")
 st.sidebar.subheader("Top 15 Most Common Entities")
 
 @st.cache_data
-def get_top_entities(df, column):
+def get_top_entities(df, column, is_sentencebert=False):
     if column in df.columns:
-        return pd.Series([entity for sublist in df[column].dropna() for entity in sublist]).value_counts().head(15)
+        if is_sentencebert:
+            #handling the Sentence-BERT 'news_entities' column
+            entities = df[column].dropna().explode().unique()  
+            entity_series = pd.Series(entities).value_counts().head(15)  #getting the top 15 
+            return pd.DataFrame({
+                "Entity": entity_series.index
+            })
+        else:
+            # Handle the 'common_entities' column for fuzzy matching
+            return pd.Series([entity for sublist in df[column].dropna() for entity in sublist]).value_counts().head(15)
 
-if view_option == "Fuzzy Matching":
-    top_entities = get_top_entities(fuzzy_df, "common_entities")
+# Function to apply styling (optional)
+def apply_styling(entity_df):
+    return entity_df.style.applymap(
+        lambda x: 'background-color: yellow' if isinstance(x, str) else '', subset='Entity'
+    )
+
+# Determine which view option is selected
+if view_option == "Sentence-BERT":
+    top_entities = get_top_entities(bert_df, "news_entities", is_sentencebert=True)
 else:
-    top_entities = get_top_entities(bert_df, "news_entities")
+    top_entities = get_top_entities(fuzzy_df, "common_entities")
 
+# Display the top entities
 if top_entities is not None:
-    st.sidebar.write(top_entities)
+    if view_option == "Sentence-BERT":
+        # Display the index and entity as a styled DataFrame in the sidebar
+        st.sidebar.write(top_entities)
+    else:
+        # Display the entities directly for fuzzy matching
+        st.sidebar.write(top_entities)
 
 # -----------------------------------------------
 # Main Content: Results Display
