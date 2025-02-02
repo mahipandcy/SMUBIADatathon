@@ -24,8 +24,8 @@ This Streamlit app enables users to analyze the similarity between news excerpts
 ### **Installation Steps**
 1. **Clone or download the repository:**
    ```bash
-   git clone https://github.com/your-username/wikileaks-news-similarity.git
-   cd wikileaks-news-similarity
+   git clone https://github.com/mahipandcy/SMUBIADatathon.git
+   cd SMUBIADatathon
    ```
 2. **Install the required dependencies:**
    ```bash
