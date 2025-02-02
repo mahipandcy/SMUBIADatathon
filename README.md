@@ -103,6 +103,22 @@ This Streamlit app enables users to analyze the similarity between news excerpts
 
 ---
 
+## **User Interface**
+
+1. **News Display, Entity, and Relationship Extraction**  
+   This interface displays the selected news article, extracted entities, and relationships.  
+   ![News Display](./images/UI1.png)
+
+2. **Top Three Similar Wikileaks Matches**  
+   View the top three most similar Wikileaks documents ranked by similarity scores and categories.  
+   ![Top Three Wikileaks Matches](./images/UI2.png)
+
+3. **Entity Graph and Word Cloud**  
+   Visualizes the entity-relationship graph and key terms from the selected news article.  
+   ![Entity Graph and Word Cloud](./images/UI3.png)
+
+---
+
 ## **Solution Impact & Insights**
 - **Validate credibility**: Compare news articles against Wikileaks documents to verify authenticity.
 - **Detect potential biases**: Identify discrepancies in media narratives.
