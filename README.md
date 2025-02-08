@@ -1,5 +1,7 @@
 # **Wikileaks and News Excerpt Similarity Analysis**
 
+[![Demo Video](https://img.shields.io/badge/Watch-Demo-red)](https://youtu.be/mWDrDqYwcYo)
+
 This Streamlit app enables users to analyze the similarity between news excerpts and Wikileaks documents using two methodologies: **Fuzzy Matching** and **Sentence-BERT**. Users can explore the relationships between journalistic articles and leaked government documents, gaining insights into entity connections, potential biases, and content alignment.
 
 ---
@@ -27,15 +29,18 @@ This Streamlit app enables users to analyze the similarity between news excerpts
    git clone https://github.com/mahipandcy/SMUBIADatathon.git
    cd SMUBIADatathon
    ```
+
 2. **Install the required dependencies:**
    ```bash
    pip install -r requirements.txt
    ```
-3. **Ensure the necessary data files are placed in the `./data/` directory:**
-   - `cited_judgments_with_news_articles.xlsx` (Fuzzy Matching data)
-   - `sentencebert_results.xlsx` (Sentence-BERT data)
-   - `processed_news_excerpts_parsed_with_category.xlsx` (Parsed news excerpts with categories)
-   - `processed_wikileaks_parsed_with_category.xlsx` (Wikileaks documents with categories)
+
+3. **Ensure the necessary data files are placed in the ./data/ directory:**
+   - cited_judgments_with_news_articles.xlsx (Fuzzy Matching data)
+   - sentencebert_results.xlsx (Sentence-BERT data)
+   - processed_news_excerpts_parsed_with_category.xlsx (Parsed news excerpts with categories)
+   - processed_wikileaks_parsed_with_category.xlsx (Wikileaks documents with categories)
+
 4. **Run the application:**
    ```bash
    streamlit run app.py
@@ -49,8 +54,9 @@ This Streamlit app enables users to analyze the similarity between news excerpts
    ```bash
    streamlit run app.py
    ```
+
 2. **Navigate to the Streamlit UI:**
-   - Open a browser and go to `http://localhost:8501` (or the URL displayed in the terminal).
+   - Open a browser and go to http://localhost:8501 (or the URL displayed in the terminal).
 
 3. **Sidebar Configuration:**
    - Select the similarity method: **Fuzzy Matching** or **Sentence-BERT**.
@@ -117,6 +123,10 @@ This Streamlit app enables users to analyze the similarity between news excerpts
    Visualizes the entity-relationship graph and key terms from the selected news article.  
    ![Entity Graph and Word Cloud](./images/UI3.png)
 
+4. **Threat Distribution Heatmap**  
+   Displays the global distribution of threats on a world map.  
+   ![Threat Heatmap](./images/heatmap.png)
+
 ---
 
 ## **Solution Impact & Insights**
@@ -131,4 +141,3 @@ This Streamlit app enables users to analyze the similarity between news excerpts
 - **Sentence-BERT**: Reimers, Nils, and Iryna Gurevych. "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks." (2019). [Link](https://arxiv.org/abs/1908.10084)
 - **FuzzyWuzzy**: [PyPI](https://pypi.org/project/fuzzywuzzy/)
 - **Streamlit Documentation**: [Streamlit Docs](https://docs.streamlit.io/)
-
